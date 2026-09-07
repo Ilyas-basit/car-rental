@@ -1,0 +1,20 @@
+{
+  "name": "LocaDrive OS - Gestion de location",
+  "short_name": "LocaDrive",
+  "description": "Gestion des clients, véhicules, réservations et contrats de location.",
+  "lang": "fr",
+  "start_url": "../index.html",
+  "scope": "../",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f8fc",
+  "theme_color": "#15304a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
