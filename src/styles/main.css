@@ -480,6 +480,83 @@
             color: var(--luno-muted);
             font-size: 12px;
         }
+
+        /* Dashboard refresh — a quieter, client-workspace inspired layout. */
+        .dashboard-main { background: #f7f8fc !important; }
+        .dashboard-main > header {
+            background: rgba(255,255,255,.92) !important;
+            border-bottom: 1px solid #ebedf3 !important;
+        }
+        .dashboard-main > header h2 { font-size: 17px !important; letter-spacing: -.02em !important; }
+        .dashboard-canvas { max-width: 1540px !important; margin: 0 auto; }
+        .dashboard-hero { padding: 10px 2px 4px; }
+        .dashboard-eyebrow,
+        .dashboard-card-kicker {
+            color: #8a92a3;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: .1em;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+        .dashboard-hero h1 { font-size: 30px !important; letter-spacing: -.04em; color: #252938 !important; }
+        .dashboard-primary-action {
+            align-items: center;
+            background: #625bf6 !important;
+            border: 1px solid #625bf6 !important;
+            border-radius: 10px !important;
+            box-shadow: 0 8px 16px rgba(98,91,246,.18);
+            color: #fff !important;
+            display: inline-flex;
+            font-size: 13px;
+            font-weight: 700;
+            gap: 7px;
+            min-height: 42px;
+            padding: 0 16px;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .dashboard-primary-action:hover { box-shadow: 0 12px 22px rgba(98,91,246,.27); transform: translateY(-1px); }
+        .dashboard-main #dashboardDateRange { height: 42px; border-color: #e7e9f0 !important; color: #525a6b; font-weight: 600; }
+        .dashboard-kpis { gap: 16px !important; }
+        .dashboard-kpis .luno-kpi {
+            min-height: 148px;
+            align-items: flex-start;
+            background: #fff !important;
+            border: 1px solid #e9ebf1 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 3px 14px rgba(28,35,60,.035) !important;
+            gap: 14px;
+            padding: 21px !important;
+            position: relative;
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+        .dashboard-kpis .luno-kpi:hover { box-shadow: 0 12px 28px rgba(28,35,60,.08) !important; transform: translateY(-2px); }
+        .dashboard-kpis .luno-kpi::after { background: #625bf6; border-radius: 20px; content: ""; height: 4px; left: 21px; position: absolute; top: 0; width: 32px; }
+        .dashboard-kpis .kpi-available::after { background: #0fb795; }
+        .dashboard-kpis .kpi-alert::after { background: #ef6c70; }
+        .dashboard-kpis .kpi-revenue::after { background: #f0a847; }
+        .dashboard-kpis .luno-kpi-icon { width: 42px; height: 42px; flex-basis: 42px; border-radius: 12px; background: #f0efff; color: #625bf6; }
+        .dashboard-kpis .luno-kpi-icon.green { background: #ecfbf5; color: #18aa7b; }
+        .dashboard-kpis .luno-kpi-icon.danger { background: #fff0f0; color: #e86369; }
+        .dashboard-kpis .luno-kpi-icon.warn { background: #fff7e9; color: #eaa13f; }
+        .dashboard-kpis .luno-kpi-label { color: #8991a0; font-size: 11px; letter-spacing: .065em; }
+        .dashboard-kpis .luno-kpi-value { color: #242838; font-size: 29px; letter-spacing: -.055em; line-height: 1.05; margin-top: 9px; }
+        .dashboard-kpis .luno-kpi-note { color: #929aaa; font-size: 11px; margin-top: 7px; }
+        .trend-up { color: #14a87a; font-size: 14px; font-weight: 800; }
+        .dashboard-secondary-stat { display: none !important; }
+        .dashboard-grid { margin-top: 8px; }
+        .dashboard-fleet-card { background: #fff !important; border: 1px solid #e9ebf1 !important; border-radius: 14px !important; box-shadow: 0 3px 14px rgba(28,35,60,.035) !important; padding: 25px !important; }
+        .dashboard-fleet-card h3 { color: #252938 !important; font-size: 18px !important; letter-spacing: -.025em; }
+        .dashboard-fleet-card .text-caption { color: #697386 !important; font-size: 11px; font-weight: 600; }
+        .dashboard-fleet-card .text-caption .bg-primary-container { background: #625bf6 !important; }
+        .dashboard-fleet-card .text-caption .bg-secondary-container { background: #80e0bf !important; }
+        .dashboard-fleet-card .text-caption .bg-tertiary-fixed { background: #ffd795 !important; }
+        .dashboard-fleet-card #dashboard-gantt-header { border-bottom: 1px solid #edf0f4; padding-bottom: 8px; }
+        .dashboard-fleet-card #dashboard-gantt-body > div { border: 1px solid #f0f1f5; border-radius: 10px; padding: 3px 0; }
+        @media (max-width: 900px) {
+            .dashboard-kpis .luno-kpi { min-height: 128px; }
+            .dashboard-hero h1 { font-size: 27px !important; }
+        }
         .luno-card {
             background: #fff;
             border: 1px solid var(--luno-border);

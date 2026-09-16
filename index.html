@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="LocaDrive"/>
-<title>LocaDrive OS - Console SaaS de Location</title>
+<meta name="apple-mobile-web-app-title" content="CarRent"/>
+<title>CarRent - Console SaaS de Location</title>
 <link rel="manifest" href="./public/manifest.webmanifest"/>
 <link rel="icon" href="./public/icon.svg" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -26,7 +26,7 @@
      behind it is reachable, and no Supabase data call runs before login. -->
 <div id="authGate" class="fixed inset-0 bg-background z-[100] flex items-center justify-center">
 <div class="w-full max-w-sm bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg p-xl">
-<h1 class="font-headline-lg text-headline-lg font-bold text-primary mb-lg text-center">LocaDrive</h1>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary mb-lg text-center">CarRent</h1>
 <p class="text-body-md text-on-surface-variant mb-lg text-center">Connexion staff</p>
 <input id="authEmail" type="email" autocomplete="username" placeholder="Email"
     class="w-full mb-sm px-md py-sm border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary"/>
@@ -47,7 +47,7 @@
 
 <aside id="menu" class="fixed left-0 top-0 h-full w-[260px] bg-inverse-surface border-r border-outline-variant flex flex-col z-40">
 <div class="p-lg">
-<h1 class="font-headline-lg text-headline-lg font-bold text-surface-bright tracking-tight">LocaDrive OS</h1>
+<h1 class="font-headline-lg text-headline-lg font-bold text-surface-bright tracking-tight">CarRent</h1>
 </div>
 <nav class="flex-1 px-sm space-y-xs" id="main-nav">
 <a class="nav-link flex items-center gap-md px-lg py-md transition-colors border-l-4 border-primary bg-primary-container/10 text-surface-bright font-semibold" href="#" data-page="dashboard" onclick="showPage('dashboard'); return false;">
@@ -76,11 +76,6 @@
 <span class="material-symbols-outlined text-[20px]">install_mobile</span>
 Installer l'application
 </button>
-<div class="mb-md rounded-lg border border-white/10 bg-white/5 p-md">
-<p class="text-[11px] uppercase tracking-widest text-outline-variant font-bold">LocaDrive OS</p>
-<p class="text-surface-bright text-body-md font-semibold mt-xs">v1.0.0</p>
-<p class="text-outline-variant text-caption mt-xs">Gestion location et flotte</p>
-</div>
 <div class="flex items-center gap-md">
 <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center">
 <span class="material-symbols-outlined text-surface-bright" data-icon="settings">settings</span>
@@ -151,14 +146,14 @@ Mode hors connexion - consultation locale uniquement
 
 <!-- ============ PAGE: DASHBOARD ============ -->
 <div id="page-root-dashboard" class="page-root" style="display:block;">
-<main class="ml-[260px] min-h-screen">
+<main class="ml-[260px] min-h-screen dashboard-main">
 <!-- TopAppBar -->
 <header class="fixed top-0 right-0 w-[calc(100%-260px)] flex justify-between items-center px-lg h-16 bg-surface dark:bg-surface-container-low border-b border-outline-variant dark:border-outline z-30">
 <div class="flex items-center gap-md">
 <button class="menu-toggle-btn hover:bg-surface-container-high rounded-full p-2 transition-all">
 <span class="material-symbols-outlined text-on-surface-variant" data-icon="menu">menu</span>
 </button>
-<h2 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-inverse-primary">LocaDrive OS</h2>
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-inverse-primary">CarRent</h2>
 </div>
 <div class="hidden lg:flex relative luno-search">
 <span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[20px]">search</span>
@@ -174,51 +169,44 @@ Mode hors connexion - consultation locale uniquement
 </div>
 </header>
 <!-- Page Canvas -->
-<div class="pt-24 pb-lg px-lg space-y-lg">
-<section class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-lg">
+<div class="pt-24 pb-lg px-lg space-y-lg dashboard-canvas">
+<section class="dashboard-hero flex flex-col xl:flex-row xl:items-end xl:justify-between gap-lg">
 <div>
-<div class="flex items-center gap-xs text-body-md mb-md">
-<span class="text-primary font-semibold">Accueil</span>
-<span class="text-on-surface-variant">/</span>
-<span class="text-on-surface-variant">Tableau de bord</span>
-</div>
+<p class="dashboard-eyebrow">Vue d'ensemble</p>
 <h1 class="text-[25px] leading-8 font-semibold text-on-surface" id="dashboardGreeting">Bonjour</h1>
-<p class="text-body-md text-on-surface-variant mt-xs">Voici ce qui se passe aujourd'hui dans votre agence.</p>
+<p class="text-body-md text-on-surface-variant mt-xs">Pilotez votre flotte et vos locations en un coup d'œil.</p>
 </div>
 <div class="flex flex-wrap items-center gap-sm">
 <div class="relative">
 <span class="absolute right-md top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[18px]">calendar_month</span>
 <input class="w-[260px] pr-12 px-md py-sm bg-white border border-outline-variant rounded-lg text-body-md" id="dashboardDateRange" value="" readonly/>
 </div>
-<span class="inline-flex items-center gap-xs px-md py-sm bg-white border border-outline-variant rounded-lg text-on-surface-variant text-body-md font-semibold">
-<span class="material-symbols-outlined text-[18px] text-secondary">database</span>
-Données chargées
-</span>
+<button class="dashboard-primary-action" onclick="openReservationPanel()"><span class="material-symbols-outlined text-[18px]">add</span> Nouvelle location</button>
 </div>
 </section>
 <!-- KPI Cards Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-md">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-md dashboard-kpis">
 <!-- KPI 1 -->
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
-<div class="luno-kpi-icon"><span class="material-symbols-outlined text-[28px]">key</span></div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi kpi-active">
+<div class="luno-kpi-icon"><span class="material-symbols-outlined text-[24px]">key</span></div>
 <div>
-<span class="luno-kpi-label">Locations actives</span>
+<span class="luno-kpi-label">Locations en cours</span>
 <span class="luno-kpi-value" id="kpi-locations-actives">0</span>
-<p class="luno-kpi-note">en cours aujourd'hui</p>
+<p class="luno-kpi-note"><span class="trend-up">↗</span> suivi en temps réel</p>
 </div>
 </div>
 <!-- KPI 2 -->
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
-<div class="luno-kpi-icon"><span class="material-symbols-outlined text-[28px]">directions_car</span></div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi kpi-available">
+<div class="luno-kpi-icon"><span class="material-symbols-outlined text-[24px]">directions_car</span></div>
 <div>
 <span class="luno-kpi-label">Véhicules disponibles</span>
 <span class="luno-kpi-value" id="kpi-vehicules-dispo">0</span>
-<p class="luno-kpi-note">prêts à louer</p>
+<p class="luno-kpi-note">prêts à partir</p>
 </div>
 </div>
 <!-- KPI 3 -->
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
-<div class="luno-kpi-icon danger"><span class="material-symbols-outlined text-[28px]">schedule</span></div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi kpi-alert">
+<div class="luno-kpi-icon danger"><span class="material-symbols-outlined text-[24px]">schedule</span></div>
 <div>
 <span class="luno-kpi-label">Retours en retard</span>
 <span class="luno-kpi-value" id="kpi-retards">0</span>
@@ -226,15 +214,15 @@ Données chargées
 </div>
 </div>
 <!-- KPI 4 -->
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
-<div class="luno-kpi-icon green"><span class="material-symbols-outlined text-[28px]">account_balance_wallet</span></div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi kpi-revenue">
+<div class="luno-kpi-icon green"><span class="material-symbols-outlined text-[24px]">account_balance_wallet</span></div>
 <div>
 <span class="luno-kpi-label">Revenu du mois</span>
 <span class="luno-kpi-value" id="kpi-revenu-mois">0€</span>
 <p class="luno-kpi-note text-secondary">locations complétées</p>
 </div>
 </div>
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi dashboard-secondary-stat">
 <div class="luno-kpi-icon warn"><span class="material-symbols-outlined text-[28px]">build</span></div>
 <div>
 <span class="luno-kpi-label">Maintenance</span>
@@ -242,7 +230,7 @@ Données chargées
 <p class="luno-kpi-note">véhicules concernés</p>
 </div>
 </div>
-<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi dashboard-secondary-stat">
 <div class="luno-kpi-icon warn"><span class="material-symbols-outlined text-[28px]">receipt_long</span></div>
 <div>
 <span class="luno-kpi-label">Contrats à facturer</span>
@@ -252,14 +240,14 @@ Données chargées
 </div>
 </div>
 <!-- Dashboard Content Grid (Asymmetric) -->
-<div class="grid grid-cols-12 gap-lg">
+<div class="grid grid-cols-12 gap-lg dashboard-grid">
 <!-- Main Feature: Fleet Availability Timeline (Gantt) -->
-<div class="col-span-12 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm">
-<div class="flex justify-between items-center mb-lg">
-<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-sm">
-<span class="material-symbols-outlined text-primary" data-icon="timeline">timeline</span>
-                            Disponibilité de la flotte
-                        </h3>
+<div class="col-span-12 bg-surface-container-lowest p-lg rounded-xl border border-outline-variant shadow-sm dashboard-fleet-card">
+<div class="flex flex-col sm:flex-row justify-between sm:items-center gap-md mb-lg">
+<div>
+<p class="dashboard-card-kicker">Planning opérationnel</p>
+<h3 class="font-title-md text-title-md text-on-surface mt-xs">Disponibilité de la flotte</h3>
+</div>
 <div class="flex gap-sm">
 <div class="flex items-center gap-xs text-caption">
 <span class="w-3 h-3 bg-primary-container rounded-full"></span> Réservé
@@ -722,7 +710,7 @@ Aucun contrat pour le moment — un contrat est généré automatiquement à la 
 <!-- Signatures Section -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
 <div class="bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
-<p class="text-on-surface-variant font-label-md uppercase tracking-widest text-[10px] mb-md">Signature LocaDrive</p>
+<p class="text-on-surface-variant font-label-md uppercase tracking-widest text-[10px] mb-md">Signature CarRent</p>
 <div class="h-32 signature-pad border border-dashed border-outline-variant rounded-lg flex items-center justify-center overflow-hidden" id="contractAgencySignatureBox">
 <span class="text-caption text-outline italic">En attente</span>
 </div>

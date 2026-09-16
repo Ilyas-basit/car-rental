@@ -62,10 +62,9 @@
     }
 
     // ---- Auth gate --------------------------------------------------------
-    // Everything (Clients CRUD included) is blocked behind #authGate until
-    // sb.auth has a live session. Every sb.from(...) call above therefore
-    // only ever runs with an authenticated JWT attached, so RLS's
-    // "staff_full_access" (for authenticated) actually applies.
+    // Each authenticated account is isolated by tenant_id in the database.
+    // The migration in supabase/migrations provisions a private tenant for
+    // every account automatically and enforces the boundary with RLS.
     let dataBooted = false; // guards against loading data twice on repeated auth events
     let currentStaffUserId = null; // auth.users id of the logged-in staff member, used as created_by/recorded_by
 
@@ -98,17 +97,11 @@
         const pill = document.getElementById('staffPill');
         const nameEl = document.getElementById('staffPillName');
         const greetingEl = document.getElementById('dashboardGreeting');
-        let displayName = session.user.email || 'Admin';
+        const displayName = session.user.email || 'Compte';
         pill.classList.remove('hidden');
         pill.classList.add('flex');
-        nameEl.textContent = displayName; // placeholder until staff row loads
+        nameEl.textContent = displayName;
         if (greetingEl) greetingEl.textContent = `Bonjour, ${displayName}`;
-        const { data, error } = await sb.from('staff').select('full_name').eq('id', session.user.id).single();
-        if (!error && data && data.full_name) {
-            displayName = data.full_name;
-            nameEl.textContent = displayName;
-            if (greetingEl) greetingEl.textContent = `Bonjour, ${displayName}`;
-        }
     }
 
     function hideStaffPill() {
@@ -123,10 +116,6 @@
         showStaffPill(session);
         if (!dataBooted) {
             dataBooted = true;
-            // Best-effort real OVERDUE detection (same job pg_cron runs hourly).
-            // Non-blocking: detectOverdue() below still catches it client-side either way.
-            try { await sb.rpc('mark_overdue_reservations'); } catch (e) { console.warn('mark_overdue_reservations rpc unavailable:', e); }
-
             await Promise.all([loadClients(), loadVehicles()]);
             await loadReservations(); // reservations reference clients + vehicles by id
             await loadContracts();    // contracts reference reservations by id
