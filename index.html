@@ -192,7 +192,6 @@ Mode hors connexion - consultation locale uniquement
 <div>
 <span class="luno-kpi-label">Locations en cours</span>
 <span class="luno-kpi-value" id="kpi-locations-actives">0</span>
-<p class="luno-kpi-note"><span class="trend-up">↗</span> suivi en temps réel</p>
 </div>
 </div>
 <!-- KPI 2 -->
@@ -201,7 +200,6 @@ Mode hors connexion - consultation locale uniquement
 <div>
 <span class="luno-kpi-label">Véhicules disponibles</span>
 <span class="luno-kpi-value" id="kpi-vehicules-dispo">0</span>
-<p class="luno-kpi-note">prêts à partir</p>
 </div>
 </div>
 <!-- KPI 3 -->
@@ -210,7 +208,6 @@ Mode hors connexion - consultation locale uniquement
 <div>
 <span class="luno-kpi-label">Retours en retard</span>
 <span class="luno-kpi-value" id="kpi-retards">0</span>
-<p class="luno-kpi-note text-error">à traiter</p>
 </div>
 </div>
 <!-- KPI 4 -->
@@ -219,7 +216,6 @@ Mode hors connexion - consultation locale uniquement
 <div>
 <span class="luno-kpi-label">Revenu du mois</span>
 <span class="luno-kpi-value" id="kpi-revenu-mois">0€</span>
-<p class="luno-kpi-note text-secondary">locations complétées</p>
 </div>
 </div>
 <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm luno-kpi dashboard-secondary-stat">
@@ -443,6 +439,7 @@ Nouveau client
 <button class="vehicule-filter-btn pb-md px-sm text-on-surface-variant hover:text-primary transition-colors text-label-md" data-filter="available" onclick="setVehiculeFilter('available', this)">Disponibles</button>
 <button class="vehicule-filter-btn pb-md px-sm text-on-surface-variant hover:text-primary transition-colors text-label-md" data-filter="rented" onclick="setVehiculeFilter('rented', this)">Loués</button>
 <button class="vehicule-filter-btn pb-md px-sm text-on-surface-variant hover:text-primary transition-colors text-label-md" data-filter="maintenance" onclick="setVehiculeFilter('maintenance', this)">Maintenance</button>
+<button class="vehicule-filter-btn pb-md px-sm text-on-surface-variant hover:text-primary transition-colors text-label-md" data-filter="retired" onclick="setVehiculeFilter('retired', this)">Retirés</button>
 </div>
 <div class="flex items-center gap-sm mb-md md:mb-0">
 <button onclick="openAddVehicleModal()" class="flex items-center gap-xs px-md py-sm bg-primary text-on-primary rounded-lg font-semibold hover:opacity-90 transition-all text-body-md">
@@ -878,7 +875,7 @@ Aucun contrat pour le moment — un contrat est généré automatiquement à la 
 <div id="addVehicleModal" class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 items-center justify-center" style="display:none;">
 <div class="bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-sm p-lg space-y-md">
 <div class="flex justify-between items-center">
-<h3 class="font-title-md text-title-md">Nouveau Véhicule</h3>
+<h3 id="addVehicleModalTitle" class="font-title-md text-title-md">Nouveau Véhicule</h3>
 <button class="p-sm hover:bg-surface-container-high rounded-full transition-all" onclick="closeAddVehicleModal()"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div class="space-y-sm">
@@ -903,7 +900,7 @@ Aucun contrat pour le moment — un contrat est généré automatiquement à la 
 </div>
 <div class="flex gap-md pt-sm">
 <button class="flex-1 bg-surface-container-highest text-on-surface-variant py-sm rounded-lg font-semibold hover:bg-outline-variant transition-all" onclick="closeAddVehicleModal()">Annuler</button>
-<button class="flex-1 bg-primary text-on-primary py-sm rounded-lg font-semibold hover:opacity-90 transition-all" onclick="submitNewVehicle()">Ajouter</button>
+<button id="submitVehicleBtn" class="flex-1 bg-primary text-on-primary py-sm rounded-lg font-semibold hover:opacity-90 transition-all" onclick="submitVehicleForm()">Ajouter</button>
 </div>
 </div>
 </div>
@@ -1008,6 +1005,3 @@ Aucun contrat pour le moment — un contrat est généré automatiquement à la 
 
 </body>
 </html>
-
-
-

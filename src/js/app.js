@@ -1,5 +1,4 @@
-
-    // ==========================================================================
+// ==========================================================================
     // LocaDrive — Application logic (client-side only, in-memory state)
     // Data model, reservation state machine, live filtering/search, forms.
     // ==========================================================================
@@ -236,7 +235,7 @@
             .map(item => item.cleaned)
             .filter(line => !ignored.test(line))
             .filter(line => !/(CARTE|NATIONALE|IDENTIT|ROYAUME|MAROC)/i.test(line))
-            .filter(line => line.length >= 2 && line.length <= 35)
+            .filter(line => line.length >= 3 && line.length <= 35) // >=3: excludes OCR-garbled label fragments like "in"/"No"/"EE"
             .filter(line => line.split(/\s+/).length <= 2);
 
         if (lines.length >= 2) return lines.slice(0, 2);
@@ -276,9 +275,10 @@
         }
 
         if (isMoroccanCni) {
+            // On the CNI, "Prénom" is printed before "Nom" in reading order.
             const candidates = extractCniNameCandidates(rawText);
-            lastName = candidates[0] || lastName || '';
-            firstName = candidates[1] || firstName || '';
+            firstName = candidates[0] || firstName || '';
+            lastName = candidates[1] || lastName || '';
         }
 
         return {
@@ -685,13 +685,14 @@
     function vehicleEffectiveStatus(vehicleId) {
         const v = getVehicle(vehicleId);
         if (v.manualStatus === 'MAINTENANCE') return 'MAINTENANCE';
+        if (v.manualStatus === 'RETIRED') return 'RETIRED';
         const rented = DB.reservations.some(r => r.vehicleId === vehicleId && (r.status === 'ACTIVE' || r.status === 'OVERDUE'));
         return rented ? 'RENTED' : 'AVAILABLE';
     }
 
     function isVehicleAvailableForRange(vehicleId, start, end, excludeResId) {
         const v = getVehicle(vehicleId);
-        if (v.manualStatus === 'MAINTENANCE') return false;
+        if (v.manualStatus === 'MAINTENANCE' || v.manualStatus === 'RETIRED') return false;
         return !DB.reservations.some(r =>
             r.vehicleId === vehicleId &&
             r.id !== excludeResId &&
@@ -987,18 +988,24 @@
         const search = (document.getElementById('vehicule-search') ? document.getElementById('vehicule-search').value : '').toLowerCase().trim();
         let list = DB.vehicles.filter(v => {
             const status = vehicleEffectiveStatus(v.id);
+            // "Tous" shows the active fleet only; retired vehicles have their own tab
+            // so they don't clutter the default view (they're kept for history, not for rent).
+            if (vehiculeFilter === 'all' && status === 'RETIRED') return false;
             if (vehiculeFilter === 'available' && status !== 'AVAILABLE') return false;
             if (vehiculeFilter === 'rented' && status !== 'RENTED') return false;
             if (vehiculeFilter === 'maintenance' && status !== 'MAINTENANCE') return false;
+            if (vehiculeFilter === 'retired' && status !== 'RETIRED') return false;
             if (search && !(v.model.toLowerCase().includes(search) || v.plate.toLowerCase().includes(search))) return false;
             return true;
         });
 
-        document.getElementById('stat-vehicules-total').textContent = DB.vehicles.length;
-        document.getElementById('stat-vehicules-dispo').textContent = DB.vehicles.filter(v => vehicleEffectiveStatus(v.id) === 'AVAILABLE').length;
-        const rentedCount = DB.vehicles.filter(v => vehicleEffectiveStatus(v.id) === 'RENTED').length;
-        document.getElementById('stat-vehicules-utilisation').textContent = Math.round((rentedCount / DB.vehicles.length) * 100) + '%';
-        const avgTarif = Math.round(DB.vehicles.reduce((s, v) => s + v.tarif, 0) / DB.vehicles.length);
+        // Retired vehicles are kept for history but excluded from active-fleet stats.
+        const activeVehicles = DB.vehicles.filter(v => vehicleEffectiveStatus(v.id) !== 'RETIRED');
+        document.getElementById('stat-vehicules-total').textContent = activeVehicles.length;
+        document.getElementById('stat-vehicules-dispo').textContent = activeVehicles.filter(v => vehicleEffectiveStatus(v.id) === 'AVAILABLE').length;
+        const rentedCount = activeVehicles.filter(v => vehicleEffectiveStatus(v.id) === 'RENTED').length;
+        document.getElementById('stat-vehicules-utilisation').textContent = activeVehicles.length ? Math.round((rentedCount / activeVehicles.length) * 100) + '%' : '0%';
+        const avgTarif = activeVehicles.length ? Math.round(activeVehicles.reduce((s, v) => s + v.tarif, 0) / activeVehicles.length) : 0;
         document.getElementById('stat-vehicules-revenu').textContent = avgTarif + '€';
 
         const grid = document.getElementById('vehicles-grid');
@@ -1012,14 +1019,18 @@
             AVAILABLE:   { cls: 'bg-secondary/15 text-secondary', label: 'AVAILABLE' },
             RENTED:      { cls: 'bg-primary/15 text-primary', label: 'RENTED' },
             MAINTENANCE: { cls: 'bg-tertiary-container/20 text-tertiary-container', label: 'MAINTENANCE' },
+            RETIRED:     { cls: 'bg-outline-variant/40 text-on-surface-variant', label: 'RETIRÉ' },
         };
 
         list.forEach(v => {
             const status = vehicleEffectiveStatus(v.id);
             const sm = statusMeta[status];
+            const retired = status === 'RETIRED';
             const maintBtnLabel = v.manualStatus === 'MAINTENANCE' ? 'Sortir de maintenance' : 'Mettre en maintenance';
+            const maintenanceBtn = retired ? '' : `
+                        <button onclick="toggleMaintenance('${v.id}')" class="text-body-md font-semibold ${v.manualStatus === 'MAINTENANCE' ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary text-left flex items-center gap-sm"><span class="material-symbols-outlined text-[20px]">build</span>${maintBtnLabel}</button>`;
             grid.insertAdjacentHTML('beforeend', `
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-all group flex flex-col min-h-[340px]">
+                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-all group flex flex-col min-h-[340px] ${retired ? 'opacity-70' : ''}">
                     <div class="relative h-44 bg-surface-container-high overflow-hidden flex items-center justify-center">
                         <span class="material-symbols-outlined text-7xl text-outline-variant">directions_car</span>
                         <div class="absolute top-4 left-4 px-3 py-1.5 ${sm.cls} text-sm font-bold rounded-full backdrop-blur-sm">${sm.label}</div>
@@ -1037,7 +1048,14 @@
                         <div class="flex items-center gap-md mb-lg text-on-surface-variant text-body-md">
                             <div class="flex items-center gap-sm"><span class="material-symbols-outlined text-[20px]">speed</span>${v.km.toLocaleString('fr-FR')} km</div>
                         </div>
-                        <button onclick="toggleMaintenance('${v.id}')" class="mt-auto pt-md border-t border-outline-variant/50 text-body-md font-semibold ${v.manualStatus === 'MAINTENANCE' ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary text-left flex items-center gap-sm"><span class="material-symbols-outlined text-[20px]">build</span>${maintBtnLabel}</button>
+                        <div class="mt-auto pt-md border-t border-outline-variant/50 flex items-center justify-between gap-sm">
+                            ${maintenanceBtn}
+                            <div class="flex items-center gap-xs ${retired ? 'ml-auto' : ''}">
+                                <button onclick="openEditVehicleModal('${v.id}')" title="Modifier" class="p-sm hover:bg-surface-container-high rounded-lg transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+                                <button onclick="toggleRetired('${v.id}')" title="${retired ? 'Réactiver' : 'Retirer de la flotte'}" class="p-sm hover:bg-surface-container-high rounded-lg transition-colors"><span class="material-symbols-outlined text-[18px]">${retired ? 'undo' : 'inventory_2'}</span></button>
+                                <button onclick="deleteVehicle('${v.id}')" title="Supprimer" class="p-sm hover:bg-error-container/30 rounded-lg transition-colors"><span class="material-symbols-outlined text-[18px] text-error">delete</span></button>
+                            </div>
+                        </div>
                     </div>
                 </div>`);
         });
@@ -1484,36 +1502,136 @@
         await loadClients();
     }
 
-    // ---- Add Vehicle modal --------------------------------------------------
+    // ---- Add / Edit Vehicle modal (same modal, editingVehicleId decides insert vs update) ----
+    let editingVehicleId = null;
+
     function openAddVehicleModal() {
+        editingVehicleId = null;
+        const title = document.getElementById('addVehicleModalTitle');
+        const submitBtn = document.getElementById('submitVehicleBtn');
+        if (title) title.textContent = 'Nouveau Véhicule';
+        if (submitBtn) submitBtn.textContent = 'Ajouter';
         document.getElementById('newVehicleModel').value = '';
         document.getElementById('newVehiclePlate').value = '';
         document.getElementById('newVehicleTarif').value = '';
         document.getElementById('newVehicleKm').value = '';
         document.getElementById('addVehicleModal').style.display = 'flex';
     }
+
+    function openEditVehicleModal(vehicleId) {
+        const v = getVehicle(vehicleId);
+        if (!v) return;
+        editingVehicleId = vehicleId;
+        const title = document.getElementById('addVehicleModalTitle');
+        const submitBtn = document.getElementById('submitVehicleBtn');
+        if (title) title.textContent = 'Modifier le véhicule';
+        if (submitBtn) submitBtn.textContent = 'Enregistrer';
+        document.getElementById('newVehicleModel').value = v.model;
+        document.getElementById('newVehiclePlate').value = v.plate;
+        document.getElementById('newVehicleTarif').value = v.tarif;
+        document.getElementById('newVehicleKm').value = v.km;
+        document.getElementById('addVehicleModal').style.display = 'flex';
+    }
+
     function closeAddVehicleModal() {
         document.getElementById('addVehicleModal').style.display = 'none';
+        editingVehicleId = null;
     }
-    async function submitNewVehicle() {
+
+    async function submitVehicleForm() {
         const model = document.getElementById('newVehicleModel').value.trim();
         const plate = document.getElementById('newVehiclePlate').value.trim();
         const tarif = parseInt(document.getElementById('newVehicleTarif').value, 10);
         const km = parseInt(document.getElementById('newVehicleKm').value, 10) || 0;
         if (!model || !plate || !tarif) { alert('Modèle, plaque et tarif requis.'); return; }
 
-        const { error } = await sb.from('vehicles').insert({
-            model: model,
-            plate_number: plate,
-            category: 'Nouvelle unité',
-            mileage_km: km,
-            daily_rate: tarif,
-            status: 'AVAILABLE',
-        });
-        if (error) { alert('Erreur ajout véhicule : ' + error.message); return; }
+        if (editingVehicleId) {
+            const { error } = await sb.from('vehicles').update({
+                model: model,
+                plate_number: plate,
+                mileage_km: km,
+                daily_rate: tarif,
+            }).eq('id', editingVehicleId);
+            if (error) {
+                const duplicate = error.code === '23505' || /duplicate key|unique/i.test(error.message || '');
+                alert(duplicate ? 'Cette plaque est déjà utilisée par un autre véhicule.' : 'Erreur modification véhicule : ' + error.message);
+                return;
+            }
+            logActivity('Véhicule modifié', `${model} (${plate})`, 'bg-primary');
+        } else {
+            const { error } = await sb.from('vehicles').insert({
+                model: model,
+                plate_number: plate,
+                category: 'Nouvelle unité',
+                mileage_km: km,
+                daily_rate: tarif,
+                status: 'AVAILABLE',
+            });
+            if (error) {
+                const duplicate = error.code === '23505' || /duplicate key|unique/i.test(error.message || '');
+                alert(duplicate ? "Cette plaque existe déjà. Si le véhicule a été retiré, réactivez-le plutôt que d'en recréer un." : 'Erreur ajout véhicule : ' + error.message);
+                return;
+            }
+            logActivity('Véhicule ajouté à la flotte', `${model} (${plate})`, 'bg-primary');
+        }
 
-        logActivity('Véhicule ajouté à la flotte', `${model} (${plate})`, 'bg-primary');
         closeAddVehicleModal();
+        await loadVehicles();
+        renderAll();
+    }
+
+    // Soft-removal: keeps the row (and its plate/history) but takes it out of the
+    // active fleet. Use this when deleteVehicle() refuses because reservations exist.
+    async function toggleRetired(vehicleId) {
+        const v = getVehicle(vehicleId);
+        if (!v) return;
+        const retiring = v.manualStatus !== 'RETIRED';
+        if (retiring && !confirm(`Retirer ${v.model} (${v.plate}) de la flotte active ? Il restera dans l'historique mais ne sera plus proposé à la location.`)) return;
+        const { error } = await sb.from('vehicles').update({ status: retiring ? 'RETIRED' : 'AVAILABLE' }).eq('id', vehicleId);
+        if (error) { alert('Erreur mise à jour véhicule : ' + error.message); return; }
+        logActivity(retiring ? 'Véhicule retiré de la flotte' : 'Véhicule réactivé', `${v.model} (${v.plate})`, 'bg-secondary');
+        await loadVehicles();
+        renderAll();
+    }
+
+    // Hard delete: only allowed when no reservation references this vehicle, so
+    // rental history is never silently destroyed. Otherwise, suggest toggleRetired().
+    async function deleteVehicle(vehicleId) {
+        const v = getVehicle(vehicleId);
+        if (!v) return;
+        if (!sb) {
+            alert('Connexion à la base de données indisponible. Réessayez dans quelques instants.');
+            return;
+        }
+
+        const localReservationCount = DB.reservations.filter(r => r.vehicleId === vehicleId).length;
+        const { count, error: countError } = await sb
+            .from('reservations')
+            .select('id', { count: 'exact', head: true })
+            .eq('vehicle_id', vehicleId);
+
+        if (countError) {
+            console.error('Erreur vérification réservations véhicule:', countError);
+        }
+
+        const reservationCount = countError ? localReservationCount : (count || 0);
+        if (reservationCount > 0) {
+            alert(`${v.model} (${v.plate}) ne peut pas être supprimé car ${reservationCount} réservation${reservationCount > 1 ? 's y sont liées' : ' y est liée'}. L'historique de location doit être conservé. Utilisez plutôt "Retirer de la flotte".`);
+            return;
+        }
+
+        if (!confirm(`Supprimer définitivement ${v.model} (${v.plate}) ? Cette action est irréversible.`)) return;
+        const { error } = await sb.from('vehicles').delete().eq('id', vehicleId);
+        if (error) {
+            if (error.code === '23503' || /foreign key/i.test(error.message || '')) {
+                alert(`${v.model} (${v.plate}) ne peut pas être supprimé car des réservations y sont liées. Utilisez plutôt "Retirer de la flotte".`);
+            } else {
+                alert("Impossible de supprimer ce véhicule pour le moment. Réessayez dans quelques instants.");
+                console.error('Erreur suppression véhicule:', error);
+            }
+            return;
+        }
+        logActivity('Véhicule supprimé', `${v.model} (${v.plate})`, 'bg-error');
         await loadVehicles();
         renderAll();
     }
@@ -1566,7 +1684,7 @@
         const client = getClient(r.clientId);
         const vehicle = getVehicle(r.vehicleId);
         const nights = daysBetween(r.start, r.end);
-        const sm = CONTRACT_STATUS_META[contract.status];
+        const sm = CONTRACT_STATUS_META[contract.status] || { label: contract.status || 'Inconnu', cls: 'bg-surface-container-high text-on-surface-variant' };
 
         document.getElementById('contractNumberDisplay').textContent = 'Contrat #' + contract.id;
         const badge = document.getElementById('contractStatusBadge');
@@ -1891,5 +2009,3 @@
             });
         });
     }
-
-
